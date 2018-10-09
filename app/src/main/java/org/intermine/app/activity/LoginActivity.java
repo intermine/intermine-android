@@ -11,7 +11,6 @@ package org.intermine.app.activity;
  */
 
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -19,7 +18,6 @@ import android.view.Menu;
 import org.intermine.app.InterMineApplication;
 import org.intermine.app.R;
 import org.intermine.app.fragment.LogInFragment;
-import org.intermine.app.fragment.PreferencesFragment;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;

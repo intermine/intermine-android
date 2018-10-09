@@ -10,25 +10,21 @@ package org.intermine.app.activity;
  *
  */
 
-import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.support.v7.app.AppCompatActivity;
 
 import com.octo.android.robospice.SpiceManager;
 import com.octo.android.robospice.request.SpiceRequest;
 import com.octo.android.robospice.request.listener.RequestListener;
 
 import org.intermine.app.InterMineApplication;
-import org.intermine.app.R;
 import org.intermine.app.dialog.AlertDialogFragment;
 import org.intermine.app.storage.Storage;
 import org.intermine.app.util.Views;
 
 import javax.inject.Inject;
 
-public abstract class BaseActivity extends ActionBarActivity implements
+public abstract class BaseActivity extends AppCompatActivity implements
         AlertDialogFragment.OnDialogDismissedListener {
     public static final int UNAUTHORIZED_CODE = 0x3482;
 
