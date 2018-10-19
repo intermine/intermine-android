@@ -69,10 +69,9 @@ public class InterMineDatabaseHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    public void addMines(String[] mineNamesArr, String[] mineNamesUrls, String[] mineNamesWebAppUrls) {
-        if(getRecordsCount() > 0) { // mines already exist in the database
-            return;
-        }
+    public void upsertMines(String[] mineNamesArr, String[] mineNamesUrls, String[] mineNamesWebAppUrls) {
+            truncateMines();
+
         SQLiteDatabase db = this.getWritableDatabase();
         db.beginTransaction();
         try {
@@ -90,6 +89,24 @@ public class InterMineDatabaseHelper extends SQLiteOpenHelper {
         } finally {
             db.endTransaction();
         }
+    }
+
+    private void truncateMines() {
+        Cursor cursor = this.getReadableDatabase().rawQuery("select DISTINCT tbl_name from sqlite_master where tbl_name = '"
+                + Favorites.TABLE_NAME + "'", null);
+        if(cursor.getCount() == 0) {
+            return;
+        }
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.beginTransaction();
+        try {
+            db.execSQL("DELETE FROM " + Favorites.TABLE_NAME);
+
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
+        db.execSQL("VACUUM");
     }
 
     public long getRecordsCount() {

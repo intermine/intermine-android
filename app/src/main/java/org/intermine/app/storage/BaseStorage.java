@@ -84,8 +84,8 @@ public abstract class BaseStorage implements Storage {
             mineNamesUrls = GetIntermineListRequest.getMineNamesUrls();
             mineNamesWebAppUrls = GetIntermineListRequest.getMineNamesWebAppUrls();
 
-            //Insert the rows into database for the first time .
-            interMineDatabaseHelper.addMines(mineNamesArr, mineNamesUrls, mineNamesWebAppUrls);
+            //Insert the rows into database for the first time if the database not exist else update the database .
+            interMineDatabaseHelper.upsertMines(mineNamesArr, mineNamesUrls, mineNamesWebAppUrls);
 
         }catch (Exception exception){
             //catch(HttpNetworkException | ExecutionException | InterruptedException exception){
@@ -96,10 +96,7 @@ public abstract class BaseStorage implements Storage {
             mineNamesWebAppUrls = new String[numberOfRecords];
             interMineDatabaseHelper.getRecords(mineNamesArr,mineNamesUrls,mineNamesWebAppUrls);
 
-
         }
-
-
 
         mDefaultMineNames = new HashSet<>(Arrays.asList(mineNamesArr));
         for (int i = 0; i < mineNamesArr.length; i++) {

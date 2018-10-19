@@ -64,7 +64,8 @@ public class GetIntermineListRequest {
                 urlConnection.setRequestMethod("GET");
                 urlConnection.setDoInput(true);
                 urlConnection.setDoInput(true);
-                urlConnection.setConnectTimeout(5000);
+                urlConnection.setConnectTimeout(1000);
+                urlConnection.setReadTimeout(1000);
                 urlConnection.connect();
 
                 inputStream = urlConnection.getInputStream();
