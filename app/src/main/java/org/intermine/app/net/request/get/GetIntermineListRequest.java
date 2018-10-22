@@ -53,7 +53,7 @@ public class GetIntermineListRequest {
         @Override
         protected String doInBackground(String... strings) {
             String result = "";
-            final String urlString = "http://registry.intermine.org/service/instances?mines=all";
+            final String urlString = "http://registry.intermine.org/service/instances?mines=prod";
             HttpURLConnection urlConnection = null;
             URL url = null;
             InputStream inputStream = null;
