@@ -10,7 +10,10 @@ package org.intermine.app.sqlite;
  *
  */
 
+import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
@@ -25,6 +28,7 @@ public class InterMineDatabaseHelper extends SQLiteOpenHelper {
 
     private static final String TEXT_TYPE = " TEXT";
     private static final String COMMA_SEP = ",";
+    private static final String SPACE = " ";
 
     private static final String SQL_CREATE_ENTRIES =
             "CREATE TABLE " + Favorites.TABLE_NAME + " (" +
@@ -42,6 +46,8 @@ public class InterMineDatabaseHelper extends SQLiteOpenHelper {
                     Favorites.COLUMN_ORGANISM_SHORT_NAME + TEXT_TYPE + COMMA_SEP +
                     Favorites.COLUMN_ONTOLOGY_TERM + TEXT_TYPE + COMMA_SEP +
                     Favorites.COLUMN_MINE + TEXT_TYPE + COMMA_SEP +
+                    Favorites.COLUMN_MINE_SERVICE_URL + TEXT_TYPE + COMMA_SEP +
+                    Favorites.COLUMN_MINE_WEB_APP_URL + TEXT_TYPE + COMMA_SEP +
                     "UNIQUE(" + Favorites.COLUMN_NAME_GENE_ID + ") ON CONFLICT REPLACE" +
                     " )";
 
@@ -62,4 +68,82 @@ public class InterMineDatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(SQL_DELETE_ENTRIES);
         onCreate(db);
     }
+
+    public void upsertMines(String[] mineNamesArr, String[] mineNamesUrls, String[] mineNamesWebAppUrls) {
+            truncateMines();
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.beginTransaction();
+        try {
+            ContentValues contentValues = new ContentValues();
+            for (int i = 0; i < mineNamesArr.length; i++) {
+                contentValues.put(Favorites._ID,i);
+                contentValues.put(Favorites.COLUMN_NAME_NAME,mineNamesArr[i]);
+                contentValues.put(Favorites.COLUMN_MINE_SERVICE_URL,mineNamesUrls[i]);
+                contentValues.put(Favorites.COLUMN_MINE_WEB_APP_URL,mineNamesWebAppUrls[i]);
+                db.insert(Favorites.TABLE_NAME, null ,contentValues);
+            }
+            db.setTransactionSuccessful();
+        } catch (Exception exception) {
+
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+    private void truncateMines() {
+        Cursor cursor = this.getReadableDatabase().rawQuery("select DISTINCT tbl_name from sqlite_master where tbl_name = '"
+                + Favorites.TABLE_NAME + "'", null);
+        if(cursor.getCount() == 0) {
+            return;
+        }
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.beginTransaction();
+        try {
+            db.execSQL("DELETE FROM " + Favorites.TABLE_NAME);
+
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
+        db.execSQL("VACUUM");
+    }
+
+    public long getRecordsCount() {
+        long count = 0;
+        SQLiteDatabase db = null;
+        try {
+            db = this.getReadableDatabase();
+            count = DatabaseUtils.queryNumEntries(db, Favorites.TABLE_NAME);
+        } finally {
+            db.close();
+        }
+        return count;
+    }
+
+    public void getRecords(String[] mineNamesArr, String[] mineNamesUrls, String[] mineNamesWebAppUrls) {
+        final String GETQUERY =  "SELECT" + SPACE + Favorites.COLUMN_NAME_NAME +
+               COMMA_SEP + Favorites.COLUMN_MINE_SERVICE_URL + COMMA_SEP+Favorites.COLUMN_MINE_WEB_APP_URL
+                + SPACE + "FROM" + SPACE + Favorites.TABLE_NAME;
+        SQLiteDatabase db = null;
+        try {
+            db = this.getReadableDatabase();
+            Cursor cursor = db.rawQuery(GETQUERY, null);
+            int counter = 0;
+            if (cursor.moveToFirst()) {
+                do {
+                    mineNamesArr[counter] = cursor.getString(0);
+                    mineNamesUrls[counter] = cursor.getString(1);
+                    mineNamesWebAppUrls[counter] = cursor.getString(2);
+                    counter++;
+                } while (cursor.moveToNext());
+            }
+
+        }catch (Exception exception) {
+
+        } finally {
+            db.close();
+        }
+    }
+
 }

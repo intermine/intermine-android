@@ -34,5 +34,7 @@ public class InterMineDatabaseContract {
         public static final String COLUMN_ONTOLOGY_TERM = "ontology_term";
         public static final String COLUMN_NAME_LOCATED_ON = "located_on";
         public static final String COLUMN_MINE = "mine";
+        public static final String COLUMN_MINE_SERVICE_URL = "mine_service_url";
+        public static final String COLUMN_MINE_WEB_APP_URL = "mine_web_app_url";
     }
 }

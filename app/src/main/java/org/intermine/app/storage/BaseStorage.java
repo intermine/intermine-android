@@ -27,8 +27,9 @@ import com.octo.android.robospice.persistence.memory.LruCacheObjectPersister;
 import com.octo.android.robospice.persistence.springandroid.json.gson.GsonObjectPersister;
 
 import org.intermine.app.InterMineApplication;
-import org.intermine.app.R;
 import org.intermine.app.core.Gene;
+import org.intermine.app.net.request.get.GetIntermineListRequest;
+import org.intermine.app.sqlite.InterMineDatabaseHelper;
 import org.intermine.app.util.Strs;
 
 import java.lang.reflect.Type;
@@ -46,6 +47,7 @@ import javax.inject.Inject;
 public abstract class BaseStorage implements Storage {
     public static final int DEFAULT_GENE_FAVORITES_CACHE_SIZE = 100;
     public static final String TAG = BaseStorage.class.getSimpleName();
+    public InterMineDatabaseHelper interMineDatabaseHelper = null;
 
     @Inject
     SharedPreferences mPreferences;
@@ -67,9 +69,35 @@ public abstract class BaseStorage implements Storage {
 
         mGeneFavoritesPersister = createGeneFavoritesPersister();
 
-        String[] mineNamesArr = ctx.getResources().getStringArray(R.array.mines_names);
-        String[] mineNamesUrls = ctx.getResources().getStringArray(R.array.mines_service_urls);
-        String[] mineNamesWebAppUrls = ctx.getResources().getStringArray(R.array.mines_web_app_urls);
+        interMineDatabaseHelper = new InterMineDatabaseHelper(ctx);
+
+        String[] mineNamesArr = null;
+        String[] mineNamesUrls = null;
+        String[] mineNamesWebAppUrls = null;
+        try{
+            String error = new GetIntermineListRequest.LoadIntermineList().execute(null,null,null).get();
+            if(!error.isEmpty()) {
+                throw new Exception(error);
+            }
+            GetIntermineListRequest.parseJson();
+            mineNamesArr = GetIntermineListRequest.getMineNamesArray();
+            mineNamesUrls = GetIntermineListRequest.getMineNamesUrls();
+            mineNamesWebAppUrls = GetIntermineListRequest.getMineNamesWebAppUrls();
+
+            //Insert the rows into database for the first time if the database not exist else update the database .
+            interMineDatabaseHelper.upsertMines(mineNamesArr, mineNamesUrls, mineNamesWebAppUrls);
+
+        }catch (Exception exception){
+            //catch(HttpNetworkException | ExecutionException | InterruptedException exception){
+            // In case of exception , extract values from database
+            int numberOfRecords = (int)interMineDatabaseHelper.getRecordsCount();
+            mineNamesArr = new String[numberOfRecords];
+            mineNamesUrls = new String[numberOfRecords];
+            mineNamesWebAppUrls = new String[numberOfRecords];
+            interMineDatabaseHelper.getRecords(mineNamesArr,mineNamesUrls,mineNamesWebAppUrls);
+
+        }
+
         mDefaultMineNames = new HashSet<>(Arrays.asList(mineNamesArr));
         for (int i = 0; i < mineNamesArr.length; i++) {
             setMineUrl(mineNamesArr[i], mineNamesUrls[i]);
